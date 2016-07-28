@@ -180,9 +180,9 @@ void QtSerialCom::Read(int fd){
 
   int i;
   printf("%d chars read: [", in_buffer_len);
-  for(i = 0; i < in_buffer_len-1; i++)
-    printf("%x ", in_buf_[i]);
-  printf("%x]\n", in_buf_[i]);
+  for(i = 0; i < in_buffer_len-1; ++i)
+    printf("%d ", in_buf_[i]);
+  printf("%d]\n", in_buf_[i]);
 
   in_buf_[in_buffer_len] = 0; //add NULL terminating char
   std::string str = in_buf_;
