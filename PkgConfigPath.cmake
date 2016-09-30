@@ -1,6 +1,7 @@
 set(SYSTEM_DETECTED ON)
 if(UNIX AND NOT APPLE)
   set(CODE_PREFIX_ "/home/$ENV{USER}")
+  set(Qt5_DIR "/Users/$ENV{USER}/Qt/5.7/gcc_64/lib/cmake/Qt5")
 elseif(APPLE)
   set(CODE_PREFIX_ "/Users/$ENV{USER}")
   set(Qt5_DIR "/Users/$ENV{USER}/Qt/5.7/clang_64/lib/cmake/Qt5")
