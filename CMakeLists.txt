@@ -3,7 +3,7 @@ project(QtSerialCom)
 
 ## User defined library/include paths
 include(PkgConfigPath.cmake)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${MIO_INCLUDE_DIR}/mio/CMakeModules")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${MIO_INCLUDE_DIR}/mio/cmake/Modules")
 
 ## mio
 include_directories(${MIO_INCLUDE_DIR})
