@@ -1,5 +1,5 @@
-#include "qtSerialCom.h"
-#include "ui_qtSerialCom.h"
+#include "qt_serial_com.h"
+#include "ui_qt_serial_com.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,7 +56,7 @@ bool QtSerialCom::BuildBaudRateList(){
           if(avail_baud_rate_vec_.back() == default_baud_vec[j])
             default_baud_idx_ = avail_baud_rate_vec_.size() - 1;
     }
-  EXP_CHK_EM(!avail_baud_rate_vec_.empty(), return(false), "couldn't find any available baud rates");
+  EXP_CHK_M(!avail_baud_rate_vec_.empty(), return(false), "couldn't find any available baud rates");
   if(default_baud_idx_ < 0)
     default_baud_idx_ = 0;
 
@@ -90,16 +90,21 @@ void QtSerialCom::OpenPort(){
   }
   
   const char *port_name = ui->comboBox_deviceName->currentText().toUtf8().constData();
-  EXP_CHK_E(ser_port_.Init(port_name, flags) == 0, return)
+  EXP_CHK(ser_port_.Init(port_name, flags) == 0, return)
   ser_port_.SetDefaultControlFlags();
-  ser_port_.SetOutputType(RAW_OUTPUT);
-  ser_port_.SetInputType(RAW_INPUT);
+  ser_port_.SetOutputType(OutputType::RawOutput);
+  ser_port_.SetInputType(InputType::RawInput);
   ser_port_.SetOutBaudRate( avail_baud_rate_vec_[ ui->comboBox_baudRate->currentIndex() ] );
   ser_port_.SetInBaudRate( avail_baud_rate_vec_[ ui->comboBox_baudRate->currentIndex() ] );
   ser_port_.SetHardwareFlowControl( ui->checkBox_hardware->isChecked() );
   ser_port_.SetSoftwareFlowControl( ui->checkBox_software->isChecked() );
   ser_port_.SetCharSize( ui->spinBox_charSize->value() );
-  ser_port_.SetParity( ui->comboBox_parity->currentIndex() );
+  std::vector<ParityType> parity_type_vec = {ParityType::NoneParity, ParityType::EvenParity, ParityType::OddParity
+#ifdef CMSPAR
+  , ParityType::SpaceParity, ParityType::MarkParity
+#endif
+  };
+  ser_port_.SetParity( parity_type_vec[ui->comboBox_parity->currentIndex()] );
   ser_port_.SetStopBits( ui->spinBox_stopBits->value() );
   //ser_port_.nFlushIO();
 
@@ -133,7 +138,7 @@ void QtSerialCom::Write(){
   switch(data_type_idx){
     case 0:
       {
-        char **sub_strings = str_split(str, ' ', buffer_length), *endptr;
+        char **sub_strings = mio::StrSplit(str, ' ', buffer_length), *endptr;
         if(buffer_length > 0){
           out_buffer_tmp = new uint8_t[buffer_length];
           for(int i = 0; i < buffer_length; ++i)
@@ -239,7 +244,7 @@ void QtSerialCom::DeviceSearch(){
   dev_search_results_vec_.clear();
   dev_search_results_vec_mtx_.unlock();
   int flags = 0;
-  ERRNO_CHK_E(nftw("/dev", QtSerialCom::NFTWCallback, 20, flags) == 0, return)
+  EXP_CHK_ERRNO(nftw("/dev", QtSerialCom::NFTWCallback, 20, flags) == 0, return)
 
   dev_search_c_str_mtx_.lock();
   free(dev_search_c_str_);

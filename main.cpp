@@ -1,4 +1,4 @@
-#include "qtSerialCom.h"
+#include "qt_serial_com.h"
 #include <QApplication>
 
 int main(int argc, char *argv[]){

@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QSocketNotifier>
-#include "mio/serialCom/serialCom.h"
+#include "mio/serial_com/serial_com.h"
 #include <vector>
 #include <mutex>
 
