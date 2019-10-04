@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(QtSerialCom)
 
+set(CMAKE_INSTALL_PREFIX "/usr/local")
+
 ## modules
 set(MODULES_DIR "${CMAKE_CURRENT_LIST_DIR}/modules")
 

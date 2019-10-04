@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=QtSerialCom
+GenericName=QtSerialCom
+Comment=Graphical tool for Serial Communications
+Exec=/usr/local/bin/qt_serial_com
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=/home/spetroce/.local/share/applications/icons/qt_serial_com.png
+StartupWMClass=QtSerialCom
+StartupNotify=true
