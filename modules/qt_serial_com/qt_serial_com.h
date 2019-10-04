@@ -3,15 +3,16 @@
 
 #include <QWidget>
 #include <QSocketNotifier>
-#include "mio/serial_com/serial_com.h"
 #include <vector>
 #include <mutex>
+#include "mio/serial_com/serial_com.h"
+
 
 namespace Ui {
   class QtSerialCom;
 }
 
-class QtSerialCom : public QWidget{
+class QtSerialCom : public QWidget {
   Q_OBJECT
 
   public:
