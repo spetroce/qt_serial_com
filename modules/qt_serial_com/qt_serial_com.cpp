@@ -21,13 +21,15 @@ char *QtSerialCom::dev_search_c_str_;
 QtSerialCom::QtSerialCom(QWidget *parent) : QWidget(parent), ui(new Ui::QtSerialCom), default_baud_idx_(-1) {
   ui->setupUi(this);
   if (BuildBaudRateList()) {
-    ui->comboBox_baudRate->setCurrentIndex(default_baud_idx_);
+    ui->combo_box_baud_rate->setCurrentIndex(default_baud_idx_);
     BuildParityList();
 
-    connect(ui->pushButton_open, SIGNAL(clicked()), this, SLOT(OpenPort()));
-    connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(ClosePort()));
-    connect(ui->pushButton_write, SIGNAL(clicked()), this, SLOT(Write()));
-    connect(ui->pushButton_dev_search, SIGNAL(clicked()), this, SLOT(DeviceSearch()));
+    connect(ui->push_button_open, SIGNAL(clicked()), this, SLOT(OpenPort()));
+    connect(ui->push_button_close, SIGNAL(clicked()), this, SLOT(ClosePort()));
+    connect(ui->push_button_write, SIGNAL(clicked()), this, SLOT(Write()));
+    connect(ui->push_button_dev_search, SIGNAL(clicked()), this, SLOT(DeviceSearch()));
+    connect(ui->push_button_clear_input, SIGNAL(clicked()), ui->plain_text_edit_input, SLOT(clear()));
+    connect(ui->push_button_clear_output, SIGNAL(clicked()), ui->plain_text_edit_output, SLOT(clear()));
   }
 }
 
@@ -50,7 +52,7 @@ bool QtSerialCom::BuildBaudRateList() {
   avail_baud_rate_vec_.clear();
   for (size_t i = 0, baud_rates_size = baud_rates.size(); i < baud_rates_size; ++i)
     if (SerialCom::GetSpeedVal(baud_rates[i]) != -1) {
-      ui->comboBox_baudRate->addItem(QString().sprintf("%d", baud_rates[i]));
+      ui->combo_box_baud_rate->addItem(QString().sprintf("%d", baud_rates[i]));
       avail_baud_rate_vec_.push_back(baud_rates[i]);
       if (default_baud_idx_ < 0)
         for (size_t j = 0; j < kDefaultBaudVecSize; ++j)
@@ -66,18 +68,18 @@ bool QtSerialCom::BuildBaudRateList() {
 
 
 void QtSerialCom::BuildParityList() {
-  ui->comboBox_parity->addItem("None");
-  ui->comboBox_parity->addItem("Even");
-  ui->comboBox_parity->addItem("Odd");
+  ui->combo_box_parity->addItem("None");
+  ui->combo_box_parity->addItem("Even");
+  ui->combo_box_parity->addItem("Odd");
 #ifdef CMSPAR
-  ui->comboBox_parity->addItem("Space");
-  ui->comboBox_parity->addItem("Mark");
+  ui->combo_box_parity->addItem("Space");
+  ui->combo_box_parity->addItem("Mark");
 #endif
 }
 
 
 void QtSerialCom::OpenPort() {
-  const int access_mode_idx = ui->comboBox_accessMode->currentIndex();
+  const int access_mode_idx = ui->combo_box_access_mode->currentIndex();
   int flags = O_NDELAY;
   if (access_mode_idx == 0)
     flags |= O_RDWR;
@@ -90,29 +92,29 @@ void QtSerialCom::OpenPort() {
     flags |= O_RDONLY;
   }
   
-  const char *port_name = ui->comboBox_deviceName->currentText().toUtf8().constData();
+  const char *port_name = ui->combo_box_device_name->currentText().toUtf8().constData();
   EXP_CHK(ser_port_.Init(port_name, flags) == 0, return)
   ser_port_.SetDefaultControlFlags();
   ser_port_.SetOutputType(OutputType::RawOutput);
   ser_port_.SetInputType(InputType::RawInput);
-  ser_port_.SetOutBaudRate(avail_baud_rate_vec_[ui->comboBox_baudRate->currentIndex()]);
-  ser_port_.SetInBaudRate(avail_baud_rate_vec_[ui->comboBox_baudRate->currentIndex()]);
-  ser_port_.SetHardwareFlowControl(ui->checkBox_hardware->isChecked());
-  ser_port_.SetSoftwareFlowControl(ui->checkBox_software->isChecked());
-  ser_port_.SetCharSize(ui->spinBox_charSize->value());
+  ser_port_.SetOutBaudRate(avail_baud_rate_vec_[ui->combo_box_baud_rate->currentIndex()]);
+  ser_port_.SetInBaudRate(avail_baud_rate_vec_[ui->combo_box_baud_rate->currentIndex()]);
+  ser_port_.SetHardwareFlowControl(ui->check_box_hardware->isChecked());
+  ser_port_.SetSoftwareFlowControl(ui->check_box_software->isChecked());
+  ser_port_.SetCharSize(ui->spin_box_char_size->value());
   std::vector<ParityType> parity_type_vec = {ParityType::NoneParity, ParityType::EvenParity, ParityType::OddParity
 #ifdef CMSPAR
   , ParityType::SpaceParity, ParityType::MarkParity
 #endif
   };
-  ser_port_.SetParity(parity_type_vec[ui->comboBox_parity->currentIndex()]);
-  ser_port_.SetStopBits(ui->spinBox_stopBits->value());
+  ser_port_.SetParity(parity_type_vec[ui->combo_box_parity->currentIndex()]);
+  ser_port_.SetStopBits(ui->spin_box_stop_bits->value());
   //ser_port_.nFlushIO();
 
-  ui->comboBox_deviceName->setEnabled(false);
-  ui->comboBox_accessMode->setEnabled(false);
-  ui->pushButton_open->setEnabled(false);
-  ui->pushButton_close->setEnabled(true);
+  ui->combo_box_device_name->setEnabled(false);
+  ui->combo_box_access_mode->setEnabled(false);
+  ui->push_button_open->setEnabled(false);
+  ui->push_button_close->setEnabled(true);
 
   if (access_mode_idx < 2) {
     qt_sock_notifier_ = new QSocketNotifier(ser_port_.GetPortFD(), QSocketNotifier::Read, this);
@@ -123,16 +125,16 @@ void QtSerialCom::OpenPort() {
 
 void QtSerialCom::ClosePort() {
   ser_port_.Uninit(true);
-  ui->comboBox_deviceName->setEnabled(true);
-  ui->comboBox_accessMode->setEnabled(true);
-  ui->pushButton_open->setEnabled(true);
-  ui->pushButton_close->setEnabled(false);
+  ui->combo_box_device_name->setEnabled(true);
+  ui->combo_box_access_mode->setEnabled(true);
+  ui->push_button_open->setEnabled(true);
+  ui->push_button_close->setEnabled(false);
 }
 
 
 void QtSerialCom::Write() {
-  char *str = strdup(ui->lineEdit_write->text().toUtf8().data());
-  const int data_type_idx = ui->comboBox_writeDataType->currentIndex();
+  char *str = strdup(ui->line_edit_write->text().toUtf8().data());
+  const int data_type_idx = ui->combo_box_write_data_type->currentIndex();
   uint8_t *out_buffer, *out_buffer_tmp = NULL;
   size_t buffer_length = 0;
 
@@ -161,9 +163,9 @@ void QtSerialCom::Write() {
     int time_out = 1;
     int num_time_out_limit = 3;
     ser_port_.Write(out_buffer, buffer_length, true, time_out, num_time_out_limit);
-    ui->plainTextEdit_write->appendPlainText(ui->lineEdit_write->text().simplified());
-    ui->plainTextEdit_write->ensureCursorVisible();
-    ui->lineEdit_write->clear();
+    ui->plain_text_edit_output->appendPlainText(ui->line_edit_write->text().simplified());
+    ui->plain_text_edit_output->ensureCursorVisible();
+    ui->line_edit_write->clear();
     //Read();
   }
 
@@ -199,8 +201,8 @@ void QtSerialCom::Read(int fd) {
   }
   printf("Removed %d characters from end of response\n", cnt);
   std::string str_read_box = std::string("[") + str + "]";
-  ui->plainTextEdit_read->appendPlainText(QString(str_read_box.c_str()));
-  ui->plainTextEdit_read->ensureCursorVisible();
+  ui->plain_text_edit_input->appendPlainText(QString(str_read_box.c_str()));
+  ui->plain_text_edit_input->ensureCursorVisible();
 }
 
 
@@ -226,22 +228,22 @@ int QtSerialCom::NFTWCallback(const char *fpath, const struct stat *sb, int tfla
 
 void QtSerialCom::DeviceSearch() {
   std::string dev_search_str;
-  if (ui->lineEdit_dev_search->text().isEmpty())
-    dev_search_str = ui->comboBox_dev_search->currentText().toStdString();
+  if (ui->line_edit_dev_search->text().isEmpty())
+    dev_search_str = ui->combo_box_dev_search->currentText().toStdString();
   else
-    dev_search_str = ui->lineEdit_dev_search->text().toStdString();
+    dev_search_str = ui->line_edit_dev_search->text().toStdString();
 
-  const size_t kDevSearchCStrLen = dev_search_str.size() + 1;
+  const size_t dev_search_c_str_len = dev_search_str.size() + 1;
   dev_search_c_str_mtx_.lock();
-  dev_search_c_str_ = (char *)malloc(kDevSearchCStrLen);
+  dev_search_c_str_ = (char *)malloc(dev_search_c_str_len);
   strcpy(dev_search_c_str_, dev_search_str.c_str());
-  for (size_t i = 0; i < kDevSearchCStrLen; ++i)
+  for (size_t i = 0; i < dev_search_c_str_len; ++i)
     dev_search_c_str_[i] = tolower(dev_search_c_str_[i]);
   dev_search_c_str_mtx_.unlock();
 
   dev_search_results_vec_mtx_.lock();
   for (size_t i = 0; i < dev_search_results_vec_.size(); ++i)
-    ui->comboBox_deviceName->removeItem(ui->comboBox_deviceName->count()-1);
+    ui->combo_box_device_name->removeItem(ui->combo_box_device_name->count()-1);
   dev_search_results_vec_.clear();
   dev_search_results_vec_mtx_.unlock();
   int flags = 0;
@@ -251,11 +253,11 @@ void QtSerialCom::DeviceSearch() {
   free(dev_search_c_str_);
   dev_search_c_str_mtx_.unlock();
 
-  const size_t kNumDefaultDev = ui->comboBox_deviceName->count();
+  const size_t kNumDefaultDev = ui->combo_box_device_name->count();
   dev_search_results_vec_mtx_.lock();
   for (std::string &res : dev_search_results_vec_)
-    ui->comboBox_deviceName->addItem(QString::fromStdString(res));
+    ui->combo_box_device_name->addItem(QString::fromStdString(res));
   dev_search_results_vec_mtx_.unlock();
-  ui->comboBox_deviceName->setCurrentIndex(kNumDefaultDev != ui->comboBox_deviceName->count() ? kNumDefaultDev : 3);
+  ui->combo_box_device_name->setCurrentIndex(kNumDefaultDev != ui->combo_box_device_name->count() ? kNumDefaultDev : 3);
 }
 

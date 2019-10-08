@@ -17,14 +17,14 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton_open">
+      <widget class="QPushButton" name="push_button_open">
        <property name="text">
         <string>Open Port</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_close">
+      <widget class="QPushButton" name="push_button_close">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -34,7 +34,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox_deviceName">
+      <widget class="QComboBox" name="combo_box_device_name">
        <property name="minimumSize">
         <size>
          <width>150</width>
@@ -87,14 +87,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_dev_search">
+      <widget class="QPushButton" name="push_button_dev_search">
        <property name="text">
         <string>Dev Search</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox_dev_search">
+      <widget class="QComboBox" name="combo_box_dev_search">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -109,7 +109,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_dev_search"/>
+      <widget class="QLineEdit" name="line_edit_dev_search"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -129,7 +129,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QComboBox" name="comboBox_accessMode">
+      <widget class="QComboBox" name="combo_box_access_mode">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -163,7 +163,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox_baudRate">
+      <widget class="QComboBox" name="combo_box_baud_rate">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -176,7 +176,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox_parity">
+      <widget class="QComboBox" name="combo_box_parity">
        <property name="toolTip">
         <string>Serial Port Parity</string>
        </property>
@@ -197,7 +197,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBox_charSize">
+      <widget class="QSpinBox" name="spin_box_char_size">
        <property name="toolTip">
         <string>Character size in bits</string>
        </property>
@@ -227,7 +227,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBox_stopBits">
+      <widget class="QSpinBox" name="spin_box_stop_bits">
        <property name="minimum">
         <number>1</number>
        </property>
@@ -280,14 +280,14 @@
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox_hardware">
+      <widget class="QCheckBox" name="check_box_hardware">
        <property name="text">
         <string>Hardware</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox_software">
+      <widget class="QCheckBox" name="check_box_software">
        <property name="text">
         <string>Software</string>
        </property>
@@ -321,7 +321,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QComboBox" name="comboBox_writeDataType">
+      <widget class="QComboBox" name="combo_box_write_data_type">
        <item>
         <property name="text">
          <string>hex</string>
@@ -335,14 +335,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_write">
+      <widget class="QPushButton" name="push_button_write">
        <property name="text">
         <string>Write</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_write">
+      <widget class="QLineEdit" name="line_edit_write">
        <property name="minimumSize">
         <size>
          <width>250</width>
@@ -357,6 +357,33 @@
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hex data should have a single space delimiter.  ASCII data should be written as a continuous line (no delimiters).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_5">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="push_button_clear_input">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear the input text box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Clear Input</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="push_button_clear_output">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear the output text box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Clear Output</string>
        </property>
       </widget>
      </item>
@@ -376,7 +403,10 @@
     </layout>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="plainTextEdit_write">
+    <widget class="QPlainTextEdit" name="plain_text_edit_output">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Read-only serial port output text box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
@@ -393,7 +423,10 @@
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="plainTextEdit_read">
+    <widget class="QPlainTextEdit" name="plain_text_edit_input">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Read-only serial port input text box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
