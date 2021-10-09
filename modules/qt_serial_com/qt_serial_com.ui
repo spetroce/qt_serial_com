@@ -45,7 +45,7 @@
         <string>Name of the port to control</string>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <item>
         <property name="text">
@@ -75,6 +75,21 @@
        <item>
         <property name="text">
          <string>/dev/ttyUSB2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>/dev/ttyACM0</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>/dev/ttyACM1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>/dev/ttyACM2</string>
         </property>
        </item>
       </widget>
@@ -163,6 +178,20 @@
       </widget>
      </item>
      <item>
+      <widget class="Line" name="line_7">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Baud Rate</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QComboBox" name="combo_box_baud_rate">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -172,6 +201,20 @@
        </property>
        <property name="toolTip">
         <string>Serial port baud rate</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_8">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Parity</string>
        </property>
       </widget>
      </item>
@@ -294,6 +337,13 @@
       </widget>
      </item>
      <item>
+      <widget class="Line" name="line_10">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_4">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -321,20 +371,6 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QComboBox" name="combo_box_write_data_type">
-       <item>
-        <property name="text">
-         <string>hex</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ascii</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="push_button_write">
        <property name="text">
         <string>Write</string>
@@ -358,6 +394,28 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hex data should have a single space delimiter.  ASCII data should be written as a continuous line (no delimiters).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="combo_box_write_data_type">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Format of write data in the line edit. Can be HEX data with space separations or ASCII. ASCII + CR means a CR will be appended to data before it is sent out.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>hex</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ascii</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ascii + CR</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>

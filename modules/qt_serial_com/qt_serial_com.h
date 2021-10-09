@@ -32,7 +32,7 @@ class QtSerialCom : public QWidget {
     std::vector<unsigned int> avail_baud_rate_vec_;
     int default_baud_idx_;
     QSocketNotifier *qt_sock_notifier_;
-    char in_buf_[5012];
+    uint8_t in_buf_[5012];
     static std::mutex dev_search_results_vec_mtx_, dev_search_c_str_mtx_;
     static std::vector<std::string> dev_search_results_vec_;
     static char *dev_search_c_str_;

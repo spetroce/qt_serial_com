@@ -5,6 +5,7 @@
 #include <ftw.h>
 #include "qt_serial_com.h"
 #include "ui_qt_serial_com.h"
+#include "mio/altro/error.h"
 #include "mio/altro/str.h"
 
 
@@ -45,20 +46,24 @@ bool QtSerialCom::BuildBaudRateList() {
                                           14400, 19200, 28800, 38400, 57600, 76800, 115200, 128000, 230400, 460800, 
                                           500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000, 2500000, 3000000, 
                                           3500000, 4000000};
-  std::vector<unsigned int> default_baud_vec = {9600, 19200, 115200};
+  std::vector<unsigned int> default_baud_vec = {115200, 19200, 9600};
   const size_t kDefaultBaudVecSize = default_baud_vec.size();
 
   default_baud_idx_ = -1;
   avail_baud_rate_vec_.clear();
-  for (size_t i = 0, baud_rates_size = baud_rates.size(); i < baud_rates_size; ++i)
+  for (size_t i = 0, baud_rates_size = baud_rates.size(); i < baud_rates_size; ++i) {
     if (SerialCom::GetSpeedVal(baud_rates[i]) != -1) {
       ui->combo_box_baud_rate->addItem(QString().sprintf("%d", baud_rates[i]));
       avail_baud_rate_vec_.push_back(baud_rates[i]);
-      if (default_baud_idx_ < 0)
-        for (size_t j = 0; j < kDefaultBaudVecSize; ++j)
-          if (avail_baud_rate_vec_.back() == default_baud_vec[j])
-            default_baud_idx_ = avail_baud_rate_vec_.size() - 1;
     }
+  }
+  for (auto & db : default_baud_vec) {
+    auto it = std::find(avail_baud_rate_vec_.begin(), avail_baud_rate_vec_.end(), db);
+    if (it != avail_baud_rate_vec_.end()) {
+      default_baud_idx_ = it - avail_baud_rate_vec_.begin();
+      break;
+    }
+  }
   EXP_CHK_M(!avail_baud_rate_vec_.empty(), return(false), "couldn't find any available baud rates");
   if (default_baud_idx_ < 0)
     default_baud_idx_ = 0;
@@ -95,6 +100,7 @@ void QtSerialCom::OpenPort() {
   const char *port_name = ui->combo_box_device_name->currentText().toUtf8().constData();
   EXP_CHK(ser_port_.Init(port_name, flags) == 0, return)
   ser_port_.SetDefaultControlFlags();
+  ser_port_.SetIgnoreBreakCondition(false);
   ser_port_.SetOutputType(OutputType::RawOutput);
   ser_port_.SetInputType(InputType::RawInput);
   ser_port_.SetOutBaudRate(avail_baud_rate_vec_[ui->combo_box_baud_rate->currentIndex()]);
@@ -102,14 +108,16 @@ void QtSerialCom::OpenPort() {
   ser_port_.SetHardwareFlowControl(ui->check_box_hardware->isChecked());
   ser_port_.SetSoftwareFlowControl(ui->check_box_software->isChecked());
   ser_port_.SetCharSize(ui->spin_box_char_size->value());
+
   std::vector<ParityType> parity_type_vec = {ParityType::NoneParity, ParityType::EvenParity, ParityType::OddParity
 #ifdef CMSPAR
   , ParityType::SpaceParity, ParityType::MarkParity
 #endif
   };
   ser_port_.SetParity(parity_type_vec[ui->combo_box_parity->currentIndex()]);
+  // ser_port_.SetParityChecking(false, false, false, false)
   ser_port_.SetStopBits(ui->spin_box_stop_bits->value());
-  //ser_port_.nFlushIO();
+  // ser_port_.FlushIO();
 
   ui->combo_box_device_name->setEnabled(false);
   ui->combo_box_access_mode->setEnabled(false);
@@ -119,6 +127,7 @@ void QtSerialCom::OpenPort() {
   if (access_mode_idx < 2) {
     qt_sock_notifier_ = new QSocketNotifier(ser_port_.GetPortFD(), QSocketNotifier::Read, this);
     connect(qt_sock_notifier_, SIGNAL(activated(int)), this, SLOT(Read(int)));
+    std::cout << "Attached QSocketNotifier to " << ser_port_.GetPortFD() << std::endl;
   }
 }
 
@@ -134,43 +143,53 @@ void QtSerialCom::ClosePort() {
 
 void QtSerialCom::Write() {
   char *str = strdup(ui->line_edit_write->text().toUtf8().data());
+  const size_t str_len = strlen(str);
+  if (str_len < 1) {
+    std::cout << FFL_STRM << "Write Line-Edit is empty..." << std::endl;
+    return;
+  }
   const int data_type_idx = ui->combo_box_write_data_type->currentIndex();
-  uint8_t *out_buffer, *out_buffer_tmp = NULL;
-  size_t buffer_length = 0;
+  std::vector<uint8_t> out_buffer;
+  size_t out_buf_len = 0;
 
-  switch(data_type_idx) {
+  switch (data_type_idx) {
+    // HEX with space separations
     case 0:
       {
-        char **sub_strings = mio::StrSplit(str, ' ', buffer_length), *endptr;
-        if (buffer_length > 0) {
-          out_buffer_tmp = new uint8_t[buffer_length];
-          for (int i = 0; i < buffer_length; ++i)
-            out_buffer_tmp[i] = strtol(sub_strings[i], &endptr, 16);
-          out_buffer = out_buffer_tmp;
+        char **sub_strings = mio::StrSplit(str, ' ', out_buf_len), *endptr;
+        if (out_buf_len > 0) {
+          out_buffer.resize(out_buf_len);
+          for (int i = 0; i < out_buf_len; ++i)
+            out_buffer[i] = strtol(sub_strings[i], &endptr, 16);
         }
         free(sub_strings);
         break;
       }
+    // ASCII
     case 1:
-      out_buffer = (uint8_t *)str;
-      buffer_length = strlen(str);
+      out_buf_len = str_len;
+      out_buffer.assign(str, str + out_buf_len);
+      break;
+    // ASCII + CR (add a CR to data before sending it out)
+    case 2:
+      out_buf_len = str_len + 1;
+      out_buffer.reserve(out_buf_len);
+      out_buffer.assign(str, str + str_len);
+      out_buffer.push_back(13);
       break;
     default:
       printf("%s - internal error, wrong write data type index [%d]\n", data_type_idx, CURRENT_FUNC);
   }
 
-  if (buffer_length > 0) {
+  if (out_buf_len > 0) {
     int time_out = 1;
     int num_time_out_limit = 3;
-    ser_port_.Write(out_buffer, buffer_length, true, time_out, num_time_out_limit);
+    ser_port_.Write(out_buffer.data(), out_buf_len, true, time_out, num_time_out_limit);
     ui->plain_text_edit_output->appendPlainText(ui->line_edit_write->text().simplified());
     ui->plain_text_edit_output->ensureCursorVisible();
     ui->line_edit_write->clear();
-    //Read();
   }
 
-  if (out_buffer_tmp)
-    delete out_buffer_tmp;
   free(str);
 }
 
@@ -182,24 +201,27 @@ void QtSerialCom::Read(int fd) {
   usleep(5000);
   int in_buffer_len;
   unsigned int bytes_read;
-  const int time_out = 1, num_time_out_limit = 3;
+  // With time_out and num_time_out_limit both set to zero, we perform a non-blocking read
+  const int time_out = 0,
+            num_time_out_limit = 0;
   int err = ioctl(fd, FIONREAD, &in_buffer_len);
   ser_port_.Read(in_buf_, in_buffer_len, bytes_read, time_out, num_time_out_limit);
 
   int i;
-  printf("%d chars read: [", in_buffer_len);
+  printf("%d bytes read: [", in_buffer_len);
   for (i = 0; i < in_buffer_len-1; ++i)
     printf("%d ", in_buf_[i]);
   printf("%d]\n", in_buf_[i]);
 
-  in_buf_[in_buffer_len] = 0; //add NULL terminating char
-  std::string str = in_buf_;
+  in_buf_[in_buffer_len] = 0;  // add NULL terminating char
+  std::string str = reinterpret_cast<char*>(in_buf_);
   int cnt = 0;
-  while (str.back() == 10 || str.back() == 13) { //remove trailing new line and carriage return characters
+  while (str.back() == 10 || str.back() == 13) {  // remove trailing new line and carriage return characters
     str.pop_back();
-    cnt++;
+    ++cnt;
   }
-  printf("Removed %d characters from end of response\n", cnt);
+  if (cnt > 0)
+    printf("Removed %d characters from end of response\n", cnt);
   std::string str_read_box = std::string("[") + str + "]";
   ui->plain_text_edit_input->appendPlainText(QString(str_read_box.c_str()));
   ui->plain_text_edit_input->ensureCursorVisible();
